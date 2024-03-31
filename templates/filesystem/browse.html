@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Folder {{ directory.name }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.css"
+          rel="stylesheet">
+    <link href="{% static 'browse.css' %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="container-fluid p-5">
+    {% include 'filesystem/breadcrumb.html' with directory=directory %}
+    <div class="row my-1 form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="showTile">
+        <label class="form-check-label" for="showTile">Tile View</label>
+    </div>
+{% if directory.is_tile %}
+    {% include 'filesystem/tile_browse.html' with directory=directory %}
+{% else %}
+    {% include 'filesystem/row_browse.html' with directory=directory %}
+{% endif %}
+    {% include 'filesystem/pagination.html' with directory=directory %}
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"
+        type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"
+        type="text/javascript"></script>
+<script src="{% static 'browse.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+    const delayedImageLoader = DelayedImageLoader(window, '{% url 'filesystem:index' %}');
+    const tileSwitch = TileSwitch(window, '{{ directory.id }}', '{{ directory.type }}', '{{ directory.page }}');
+    window.onload = () => {
+        window.addEventListener('scroll', onScroll);
+        document.getElementById('showTile').addEventListener('change', onChangeShowTile);
+        if ('{{ directory.is_tile }}' === 'True') {
+            document.getElementById('showTile').checked = true;
+        }
+    }
+
+    function onScroll() {
+        delayedImageLoader.scroll();
+    }
+
+    function onChangeShowTile(ev) {
+        tileSwitch.changed(ev);
+    }
+</script>
+</body>
+</html>
