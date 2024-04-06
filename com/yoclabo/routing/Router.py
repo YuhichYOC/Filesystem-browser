@@ -99,15 +99,12 @@ class FilesystemRouter(Router):
             return False
         if not self.has_get_param('type'):
             return False
-        if self.get_param('type') == 'media':
-            return True
-        if self.get_param('type') == 'pdf':
-            return True
+        if self.get_param('type') == 'directory':
+            return False
         if self.get_param('type') == 'image':
             if self.has_get_param('content'):
                 return False
-            return True
-        return False
+        return True
 
     def is_directory_get(self) -> bool:
         if not self.has_get_param('id'):

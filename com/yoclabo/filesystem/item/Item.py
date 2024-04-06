@@ -176,6 +176,7 @@ class Pdf(Item):
         return
 
     def prepare_view(self) -> None:
+        self.fill_ancestors()
         copy_file_to_static(str(self.f_id), self.f_name)
         return
 
@@ -187,6 +188,7 @@ class Media(Item):
         return
 
     def prepare_view(self) -> None:
+        self.fill_ancestors()
         copy_file_to_static(str(self.f_id), self.f_name)
         return
 

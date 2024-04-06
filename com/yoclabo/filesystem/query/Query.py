@@ -53,7 +53,7 @@ def get_type(path: Path) -> str:
         return 'directory'
     if path.name.startswith('.'):
         return 'hidden_file'
-    if path.suffix == '.jpg' or path.suffix == '.jpeg' or path.suffix == '.png':
+    if path.suffix == '.jpg' or path.suffix == '.jpeg' or path.suffix == '.png' or path.suffix == '.gif':
         return 'image'
     if path.suffix == '.pdf':
         return 'pdf'

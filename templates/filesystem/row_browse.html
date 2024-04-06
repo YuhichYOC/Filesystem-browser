@@ -12,18 +12,18 @@
     {% endif %}
     </span>
     {% if child.type == 'directory' %}
-    <span class="col-sm-12 col-lg-4 text-center">
+    <span class="col-sm-12 col-lg-4 text-center overflow-hidden">
         <img src="{% static 'folder.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
     </span>
     {% elif child.type == 'image' %}
-    <span class="col-sm-12 col-lg-4 text-center">
+    <span class="col-sm-12 col-lg-4 text-center overflow-hidden">
         <a href="?id={{ child.id }}&type={{ child.type }}&content=bytes" data-lightbox="image" data-title="image">
             <img src="{% static 'image.png' %}" alt="{{ child.name }}" class="lazy"
                  style="max-height: 180px;" id="{{ child.id }}">
         </a>
     </span>
     {% else %}
-    <span class="col-sm-12 col-lg-4 text-center">
+    <span class="col-sm-12 col-lg-4 text-center overflow-hidden">
         <img src="{% static 'other.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
     </span>
     {% endif %}

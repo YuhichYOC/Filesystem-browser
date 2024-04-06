@@ -1,7 +1,7 @@
 {% load static %}
 <div class="row my-1">
 {% for child in directory.children %}
-    <span class="col-4 text-center my-1 border-top border-bottom">
+    <span class="col-4 text-center my-1 border-top border-bottom overflow-hidden">
     {% if child.type == 'directory' and directory.is_tile %}
         <a href="?id={{ child.id }}&page=1&tile=true">
             <img src="{% static 'folder.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
@@ -18,7 +18,7 @@
                  style="max-height: 180px;" id="{{ child.id }}">
         </a>
     {% else %}
-        <a href="?id={{ child.id }}&type={{ child.type }}">
+        <a target="_blank" href="?id={{ child.id }}&type={{ child.type }}">
             <img src="{% static 'other.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
         </a>
         <span style="display: block;">{{ child.name }}</span>
