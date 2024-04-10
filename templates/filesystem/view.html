@@ -18,9 +18,22 @@
         <img src="{{ document.image }}" alt="{{ document.name }}">
     </div>
 {% elif document.type == 'pdf' %}
-    <div class="row d-flex h-100 flex-fill justify-content-center my-1">
-        <embed src="{% static document.name %}">
+    <div class="row d-flex flex-fill justify-content-center my-1">
+        <span class="my-1">
+            <input type="button" class="resize-font-xxl" value="Previous" id="prev">
+            <input type="button" class="resize-font-xxl" value="Next" id="next">
+            <input type="button" class="resize-font-xxl" value="↻" id="right90">
+            <input type="button" class="resize-font-xxl" value="↺" id="left90">
+        </span>
+        <canvas id="pdf-canvas" class="col-12" style="border: solid black 1px;"></canvas>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+    <script src="{% static 'pdf.mjs' %}" type="module"></script>
+    <script type="module">
+        import {load} from "{% static 'pdf.mjs' %}";
+        load("{% static document.name %}");
+    </script>
 {% elif document.type == 'media' %}
     <div class="row d-flex h-100 flex-fill justify-content-center my-1">
         <embed src="{% static document.name %}">
