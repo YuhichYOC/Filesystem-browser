@@ -17,5 +17,9 @@
 # limitations under the License.
 #
 
+import environ
+env = environ.Env()
+env.read_env('.env')
+
 def get_root_directory_path() -> str:
-    return ''
+    return env('ROOT_DIRECTORY')

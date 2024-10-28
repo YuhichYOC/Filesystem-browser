@@ -18,8 +18,10 @@
 #
 
 import base64
+import os
 import os.path
 import shutil
+import stat
 from pathlib import Path
 
 from browser.settings import BASE_DIR
@@ -80,4 +82,5 @@ def copy_file_to_static(copy_from: str, copy_to: str) -> None:
     if os.path.exists(l_copy_to):
         os.remove(l_copy_to)
     shutil.copy(copy_from, l_copy_to)
+    os.chmod(l_copy_to, stat.S_IREAD | stat.S_IWRITE | stat.S_IROTH)
     return
