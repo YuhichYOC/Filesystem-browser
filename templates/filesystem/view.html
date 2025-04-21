@@ -13,6 +13,9 @@
     <div class="row my-1">
         {% include 'filesystem/breadcrumb.html' with directory=document %}
     </div>
+    <div class="row my-1">
+        <a href="{% url 'filesystem:download' %}?id={{ document.id }}">Download</a>
+    </div>
 {% if document.type == 'image' %}
     <div class="row d-flex h-100 flex-fill justify-content-center my-1">
         <img src="{{ document.image }}" alt="{{ document.name }}">

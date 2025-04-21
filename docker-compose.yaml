@@ -1,0 +1,13 @@
+services:
+    filesystem-browser:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        init: true
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - </path/to/your/smb/share/directory>:</path/to/share/directory/in/your/container>
+        command: supervisord -c /etc/supervisor/conf.d/supervisord.conf

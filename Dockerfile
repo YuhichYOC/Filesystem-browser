@@ -16,5 +16,3 @@ COPY supervisord.conf /etc/supervisor/conf.d/
 
 RUN cd /opt/browser/ && . bin/activate && pip install -r requirements.txt && deactivate
 RUN mkdir /opt/browser/log/ && touch /opt/browser/log/supervisord.log && touch /opt/browser/log/nginx.log && touch /opt/browser/log/gunicorn.log
-
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

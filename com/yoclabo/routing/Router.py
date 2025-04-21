@@ -18,6 +18,7 @@
 #
 
 from django.core.handlers.wsgi import WSGIRequest
+from django.http import FileResponse
 from django.http.response import HttpResponse
 
 from com.yoclabo.routing import BrowserHandler, FilesystemHandler
@@ -27,7 +28,7 @@ def run_browser_handler(handler: BrowserHandler) -> HttpResponse:
     return handler.run()
 
 
-def run_filesystem_handler(handler: FilesystemHandler) -> HttpResponse:
+def run_filesystem_handler(handler: FilesystemHandler) -> HttpResponse | FileResponse:
     return handler.run()
 
 
@@ -76,6 +77,14 @@ class FilesystemRouter(Router):
     def __init__(self, request: WSGIRequest):
         super().__init__(request)
 
+    def is_file_post(self) -> bool:
+        if not self.request.method == 'POST':
+            return False
+        if not self.request.FILES:
+            return False
+        # If the parameter id is blank, I assume it's a post to the root directory.
+        return True
+
     def is_image_bytearray_get(self) -> bool:
         if not self.has_get_param('id'):
             return False
@@ -119,6 +128,14 @@ class FilesystemRouter(Router):
                 return False
         return True
 
+    def respond_post_file(self) -> HttpResponse:
+        h = FilesystemHandler.FilesystemFilePostHandler(self.request)
+        return run_filesystem_handler(h)
+
+    def respond_file_download(self) -> FileResponse:
+        h = FilesystemHandler.FilesystemDownloadHandler(self.request)
+        return run_filesystem_handler(h)
+
     def respond_image_bytearray(self) -> HttpResponse:
         h = FilesystemHandler.FilesystemImageBytearrayHandler(self.request)
         return run_filesystem_handler(h)
@@ -140,6 +157,8 @@ class FilesystemRouter(Router):
         return run_filesystem_handler(h)
 
     def run(self) -> HttpResponse:
+        if self.is_file_post():
+            return self.respond_post_file()
         if self.is_image_bytearray_get():
             return self.respond_image_bytearray()
         if self.is_web_encoded_image_get():
@@ -152,3 +171,6 @@ class FilesystemRouter(Router):
             return self.respond_root()
         h = BrowserHandler.BrowserHandler(self.request)
         return run_browser_handler(h)
+
+    def download(self) -> FileResponse:
+        return self.respond_file_download()

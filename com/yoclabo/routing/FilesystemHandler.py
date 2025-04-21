@@ -18,10 +18,11 @@
 #
 
 from django.core.handlers.wsgi import WSGIRequest
+from django.http import FileResponse
 from django.http.response import HttpResponse
 from django.shortcuts import render
 
-from com.yoclabo.filesystem.item.Item import Directory, Image, Pdf, Media
+from com.yoclabo.filesystem.item.Item import Item, Directory, Image, Pdf, Media
 from com.yoclabo.setting import Server
 
 
@@ -35,6 +36,12 @@ def go_to_directory(path: str, page: int, tile: bool) -> dict:
     l_d = Directory(Server.get_root_directory_path() + path, 1)
     l_d.prepare_browse(page, tile)
     return {'directory': l_d}
+
+
+def save_file(path: str, files: dict) -> None:
+    l_d = Directory(Server.get_root_directory_path() + path, 1)
+    l_d.save_file(files)
+    return
 
 
 def view_image(path: str) -> dict:
@@ -53,6 +60,12 @@ def view_media(path: str) -> dict:
     l_m = Media(Server.get_root_directory_path() + path, 1)
     l_m.prepare_view()
     return {'document': l_m}
+
+
+def view_others(path: str) -> dict:
+    l_o = Item(Server.get_root_directory_path() + path, 1)
+    l_o.fill_ancestors()
+    return {'document': l_o}
 
 
 def get_web_encoded_image(path: str) -> str:
@@ -109,7 +122,23 @@ class FilesystemDocumentHandler(FilesystemHandler):
             return render(self.request, 'filesystem/view.html', view_media(self.get_param('id')))
         if self.get_param('type') == 'pdf':
             return render(self.request, 'filesystem/view.html', view_pdf(self.get_param('id')))
-        return render(self.request, 'filesystem/view.html', view_image(self.get_param('id')))
+        if self.get_param('type') == 'image':
+            return render(self.request, 'filesystem/view.html', view_image(self.get_param('id')))
+        return render(self.request, 'filesystem/view.html', view_others(self.get_param('id')))
+
+
+class FilesystemDownloadHandler(FilesystemHandler):
+
+    def run(self) -> FileResponse:
+        return FileResponse(open(Server.get_root_directory_path() + self.get_param('id'), "rb"))
+
+
+class FilesystemFilePostHandler(FilesystemHandler):
+
+    def run(self) -> HttpResponse:
+        save_file(self.get_param('id'), self.request.FILES)
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
+        return h.run()
 
 
 class FilesystemDirectoryHandler(FilesystemHandler):

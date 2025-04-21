@@ -17,7 +17,10 @@
 # limitations under the License.
 #
 
+import os
 import urllib.parse
+
+from django.utils.text import get_valid_filename
 
 from com.yoclabo.filesystem.query.Query import *
 from com.yoclabo.setting import Server
@@ -143,6 +146,13 @@ class Directory(Item):
         self.cache_children_info()
         self.f_pages = Paginator().create_list(page, self.prev_page, self.next_page, self.max_page)
         self.slice()
+        return
+
+    def save_file(self, files: dict) -> None:
+        l_dir = Server.get_root_directory_path() + self.id
+        with open(os.path.join(l_dir, get_valid_filename(files['uploadFile'].name)), 'wb+') as dest:
+            for c in files['uploadFile'].chunks():
+                dest.write(c)
         return
 
 
