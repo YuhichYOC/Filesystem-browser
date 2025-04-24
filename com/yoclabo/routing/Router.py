@@ -85,6 +85,13 @@ class FilesystemRouter(Router):
         # If the parameter id is blank, I assume it's a post to the root directory.
         return True
 
+    def is_text_update_post(self) -> bool:
+        if not self.request.method == 'POST':
+            return False
+        if not self.has_post_param('text_content'):
+            return False
+        return True
+
     def is_image_bytearray_get(self) -> bool:
         if not self.has_get_param('id'):
             return False
@@ -136,6 +143,10 @@ class FilesystemRouter(Router):
         h = FilesystemHandler.FilesystemDownloadHandler(self.request)
         return run_filesystem_handler(h)
 
+    def respond_update_text_content(self) -> HttpResponse:
+        h = FilesystemHandler.FilesystemUpdateTextContentHandler(self.request)
+        return run_filesystem_handler(h)
+
     def respond_image_bytearray(self) -> HttpResponse:
         h = FilesystemHandler.FilesystemImageBytearrayHandler(self.request)
         return run_filesystem_handler(h)
@@ -159,6 +170,8 @@ class FilesystemRouter(Router):
     def run(self) -> HttpResponse:
         if self.is_file_post():
             return self.respond_post_file()
+        if self.is_text_update_post():
+            return self.respond_update_text_content()
         if self.is_image_bytearray_get():
             return self.respond_image_bytearray()
         if self.is_web_encoded_image_get():

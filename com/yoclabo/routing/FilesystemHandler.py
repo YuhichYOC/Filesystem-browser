@@ -22,7 +22,7 @@ from django.http import FileResponse
 from django.http.response import HttpResponse
 from django.shortcuts import render
 
-from com.yoclabo.filesystem.item.Item import Item, Directory, Image, Pdf, Media
+from com.yoclabo.filesystem.item.Item import Item, Directory, Text, Image, Pdf, Media
 from com.yoclabo.setting import Server
 
 
@@ -41,6 +41,18 @@ def go_to_directory(path: str, page: int, tile: bool) -> dict:
 def save_file(path: str, files: dict) -> None:
     l_d = Directory(Server.get_root_directory_path() + path, 1)
     l_d.save_file(files)
+    return
+
+
+def view_text(path: str) -> dict:
+    l_t = Text(Server.get_root_directory_path() + path, 1)
+    l_t.prepare_view()
+    return {'document': l_t}
+
+
+def update_text_content(path: str, new_content: str) -> None:
+    l_t = Text(Server.get_root_directory_path() + path, 1)
+    l_t.update_text_content(new_content)
     return
 
 
@@ -115,9 +127,19 @@ class FilesystemWebEncodedImageHandler(FilesystemHandler):
         return HttpResponse(get_web_encoded_image(self.get_param('id')), content_type='text/plain')
 
 
+class FilesystemUpdateTextContentHandler(FilesystemHandler):
+
+    def run(self) -> HttpResponse:
+        update_text_content(self.get_param('id'), self.get_param('text_content'))
+        h = FilesystemDocumentHandler(self.request)
+        return h.run()
+
+
 class FilesystemDocumentHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
+        if self.get_param('type') == 'text':
+            return render(self.request, 'filesystem/view.html', view_text(self.get_param('id')))
         if self.get_param('type') == 'media':
             return render(self.request, 'filesystem/view.html', view_media(self.get_param('id')))
         if self.get_param('type') == 'pdf':

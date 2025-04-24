@@ -55,6 +55,8 @@ def get_type(path: Path) -> str:
         return 'directory'
     if path.name.startswith('.'):
         return 'hidden_file'
+    if path.suffix == '.txt' or path.suffix == '.text':
+        return 'text'
     if path.suffix == '.jpg' or path.suffix == '.jpeg' or path.suffix == '.png' or path.suffix == '.gif':
         return 'image'
     if path.suffix == '.pdf':
@@ -67,6 +69,16 @@ def get_type(path: Path) -> str:
 
 def get_name(path: Path) -> str:
     return path.name
+
+
+def get_text_content(path: Path) -> str:
+    return open(path).read()
+
+
+def update_text_content(path: Path, content: str) -> None:
+    with open(path, 'w') as cont:
+        cont.write(content)
+    return
 
 
 def get_web_encoded_image(path: Path) -> str:

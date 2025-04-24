@@ -41,6 +41,20 @@
     <div class="row d-flex h-100 flex-fill justify-content-center my-1">
         <embed src="{% static document.name %}">
     </div>
+{% elif document.type == 'text' %}
+    <form method="post" action="?id={{ document.id }}&type=text" enctype="multipart/form-data">
+        <div class="row d-flex h-100 flex-fill justify-content-center fieldwrapper my-1">
+            {% csrf_token %}
+            <textarea class="form-control" name="text_content" oninput="resize(this)">{{ document.content }}</textarea>
+        </div>
+        <div class="row d-flex h-100 flex-fill justify-content-center my-1">
+            <input type="submit" class="btn btn-primary">
+        </div>
+    </form>
+    <script type="text/javascript">
+        const resize = t => t.style.height = t.scrollHeight + 'px';
+        window.onload(resize(document.getElementsByName('text_content')[0]));
+    </script>
 {% endif %}
 </div>
 </body>

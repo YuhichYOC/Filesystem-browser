@@ -156,6 +156,31 @@ class Directory(Item):
         return
 
 
+class Text(Item):
+
+    def __init__(self, path: str, sequence: int) -> None:
+        super().__init__(path, sequence)
+        self.f_content: str = ''
+        return
+
+    @property
+    def content(self) -> str:
+        return self.f_content
+
+    def get_text_content(self) -> None:
+        self.f_content = get_text_content(self.f_id)
+        return
+
+    def update_text_content(self, new_content: str) -> None:
+        update_text_content(self.f_id, new_content)
+        return
+
+    def prepare_view(self) -> None:
+        self.fill_ancestors()
+        self.get_text_content()
+        return
+
+
 class Image(Item):
 
     def __init__(self, path: str, sequence: int) -> None:

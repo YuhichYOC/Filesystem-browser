@@ -15,6 +15,10 @@
     <span class="col-sm-12 col-lg-4 text-center overflow-hidden">
         <img src="{% static 'folder.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
     </span>
+    {% elif child.type == 'text' %}
+    <span class="col-sm-12 col-lg-4 text-center overflow-hidden">
+        <img src="{% static 'other.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
+    </span>
     {% elif child.type == 'image' %}
     <span class="col-sm-12 col-lg-4 text-center overflow-hidden">
         <a href="?id={{ child.id }}&type={{ child.type }}&content=bytes" data-lightbox="image" data-title="image">
