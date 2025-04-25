@@ -28,6 +28,10 @@ from browser.settings import BASE_DIR
 from com.yoclabo.setting.Server import get_root_directory_path
 
 
+def get_path_from_root_directory(path: str) -> str:
+    return os.path.join(get_root_directory_path(), path[1:]) if path.startswith('/') else os.path.join(get_root_directory_path(), path)
+
+
 def query_ancestors(path: Path, ancestors: list = None) -> list:
     if str(path) == get_root_directory_path():
         return [path]
@@ -67,6 +71,13 @@ def get_type(path: Path) -> str:
     return 'other'
 
 
+def create_directory(path: Path) -> None:
+    if os.path.exists(path):
+        return
+    os.mkdir(path)
+    return
+
+
 def get_name(path: Path) -> str:
     return path.name
 
@@ -76,6 +87,8 @@ def get_text_content(path: Path) -> str:
 
 
 def update_text_content(path: Path, content: str) -> None:
+    if os.path.isdir(path):
+        return
     with open(path, 'w') as cont:
         cont.write(content)
     return

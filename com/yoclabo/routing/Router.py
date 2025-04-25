@@ -92,6 +92,22 @@ class FilesystemRouter(Router):
             return False
         return True
 
+    def is_create_text_file_post(self) -> bool:
+        if not self.request.method == 'POST':
+            return False
+        if not self.has_post_param('textFileName'):
+            return False
+        if not self.has_post_param('content'):
+            return False
+        return True
+
+    def is_create_directory_post(self) -> bool:
+        if not self.request.method == 'POST':
+            return False
+        if not self.has_post_param('directoryName'):
+            return False
+        return True
+
     def is_image_bytearray_get(self) -> bool:
         if not self.has_get_param('id'):
             return False
@@ -159,6 +175,14 @@ class FilesystemRouter(Router):
         h = FilesystemHandler.FilesystemDocumentHandler(self.request)
         return run_filesystem_handler(h)
 
+    def respond_create_text_file(self) -> HttpResponse:
+        h = FilesystemHandler.FilesystemCreateTextFileHandler(self.request)
+        return run_filesystem_handler(h)
+
+    def respond_create_directory(self) -> HttpResponse:
+        h = FilesystemHandler.FilesystemCreateDirectoryHandler(self.request)
+        return run_filesystem_handler(h)
+
     def respond_directory(self) -> HttpResponse:
         h = FilesystemHandler.FilesystemDirectoryHandler(self.request)
         return run_filesystem_handler(h)
@@ -172,6 +196,10 @@ class FilesystemRouter(Router):
             return self.respond_post_file()
         if self.is_text_update_post():
             return self.respond_update_text_content()
+        if self.is_create_text_file_post():
+            return self.respond_create_text_file()
+        if self.is_create_directory_post():
+            return self.respond_create_directory()
         if self.is_image_bytearray_get():
             return self.respond_image_bytearray()
         if self.is_web_encoded_image_get():

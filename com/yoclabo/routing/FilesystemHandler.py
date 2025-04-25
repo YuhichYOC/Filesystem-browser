@@ -23,6 +23,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 
 from com.yoclabo.filesystem.item.Item import Item, Directory, Text, Image, Pdf, Media
+from com.yoclabo.filesystem.query.Query import *
 from com.yoclabo.setting import Server
 
 
@@ -33,60 +34,72 @@ def go_to_root(page: int, tile: bool) -> dict:
 
 
 def go_to_directory(path: str, page: int, tile: bool) -> dict:
-    l_d = Directory(Server.get_root_directory_path() + path, 1)
+    l_d = Directory(get_path_from_root_directory(path), 1)
     l_d.prepare_browse(page, tile)
     return {'directory': l_d}
 
 
+def create_directory(path: str, name: str) -> None:
+    l_d = Directory(get_path_from_root_directory(path), 1)
+    l_d.create_directory(name)
+    return
+
+
+def create_text_file(path: str, name: str, content: str) -> None:
+    l_d = Directory(get_path_from_root_directory(path), 1)
+    l_d.create_text_file(name, content)
+    return
+
+
 def save_file(path: str, files: dict) -> None:
-    l_d = Directory(Server.get_root_directory_path() + path, 1)
+    l_d = Directory(get_path_from_root_directory(path), 1)
     l_d.save_file(files)
     return
 
 
 def view_text(path: str) -> dict:
-    l_t = Text(Server.get_root_directory_path() + path, 1)
+    l_t = Text(get_path_from_root_directory(path), 1)
     l_t.prepare_view()
     return {'document': l_t}
 
 
 def update_text_content(path: str, new_content: str) -> None:
-    l_t = Text(Server.get_root_directory_path() + path, 1)
+    l_t = Text(get_path_from_root_directory(path), 1)
     l_t.update_text_content(new_content)
     return
 
 
 def view_image(path: str) -> dict:
-    l_i = Image(Server.get_root_directory_path() + path, 1)
+    l_i = Image(get_path_from_root_directory(path), 1)
     l_i.prepare_view()
     return {'document': l_i}
 
 
 def view_pdf(path: str) -> dict:
-    l_p = Pdf(Server.get_root_directory_path() + path, 1)
+    l_p = Pdf(get_path_from_root_directory(path), 1)
     l_p.prepare_view()
     return {'document': l_p}
 
 
 def view_media(path: str) -> dict:
-    l_m = Media(Server.get_root_directory_path() + path, 1)
+    l_m = Media(get_path_from_root_directory(path), 1)
     l_m.prepare_view()
     return {'document': l_m}
 
 
 def view_others(path: str) -> dict:
-    l_o = Item(Server.get_root_directory_path() + path, 1)
+    l_o = Item(get_path_from_root_directory(path), 1)
     l_o.fill_ancestors()
     return {'document': l_o}
 
 
 def get_web_encoded_image(path: str) -> str:
-    l_i = Image(Server.get_root_directory_path() + path, 1)
+    l_i = Image(get_path_from_root_directory(path), 1)
     return l_i.get_web_encoded_image()
 
 
 def get_image_bytearray(path: str) -> bytes:
-    l_i = Image(Server.get_root_directory_path() + path, 1)
+    l_i = Image(get_path_from_root_directory(path), 1)
     return l_i.get_image_bytearray()
 
 
@@ -152,13 +165,29 @@ class FilesystemDocumentHandler(FilesystemHandler):
 class FilesystemDownloadHandler(FilesystemHandler):
 
     def run(self) -> FileResponse:
-        return FileResponse(open(Server.get_root_directory_path() + self.get_param('id'), "rb"))
+        return FileResponse(open(get_path_from_root_directory(self.get_param('id')), "rb"))
 
 
 class FilesystemFilePostHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
         save_file(self.get_param('id'), self.request.FILES)
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
+        return h.run()
+
+
+class FilesystemCreateTextFileHandler(FilesystemHandler):
+
+    def run(self) -> HttpResponse:
+        create_text_file(self.get_param('id'), self.get_param('textFileName'), self.get_param('content'))
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
+        return h.run()
+
+
+class FilesystemCreateDirectoryHandler(FilesystemHandler):
+
+    def run(self) -> HttpResponse:
+        create_directory(self.get_param('id'), self.get_param('directoryName'))
         h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
         return h.run()
 

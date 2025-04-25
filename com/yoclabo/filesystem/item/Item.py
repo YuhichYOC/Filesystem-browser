@@ -148,8 +148,22 @@ class Directory(Item):
         self.slice()
         return
 
+    def create_directory(self, name: str) -> None:
+        if not name:
+            return
+        l_directory_path = Path(os.path.join(get_path_from_root_directory(self.id), get_valid_filename(name)))
+        create_directory(l_directory_path)
+        return
+
+    def create_text_file(self, name: str, content: str) -> None:
+        if not name:
+            return
+        l_text_file_path = Path(os.path.join(get_path_from_root_directory(self.id), get_valid_filename(name if name.endswith('.txt') else name + '.txt')))
+        update_text_content(l_text_file_path, content)
+        return
+
     def save_file(self, files: dict) -> None:
-        l_dir = Server.get_root_directory_path() + self.id
+        l_dir = get_path_from_root_directory(self.id)
         with open(os.path.join(l_dir, get_valid_filename(files['uploadFile'].name)), 'wb+') as dest:
             for c in files['uploadFile'].chunks():
                 dest.write(c)
