@@ -25,6 +25,9 @@ from django.utils.text import get_valid_filename
 from com.yoclabo.filesystem.query.Query import *
 from com.yoclabo.setting import Server
 
+import environ
+env = environ.Env()
+env.read_env('.env')
 
 class Item:
 
@@ -77,8 +80,9 @@ class Directory(Item):
         self.f_page: int = 0
         self.f_pages: list = []
         self.f_is_tile: bool = False
-        self.ITEMS_PER_PAGE: int = 10
-        self.TILE_ITEMS_PER_PAGE: int = 30
+        self.SLIDE_SHOW_INTERVAL_MS: int = env.int('SLIDE_SHOW_INTERVAL_MS', default=3000)
+        self.ITEMS_PER_PAGE: int = env.int('ITEMS_PER_PAGE', default=10)
+        self.TILE_ITEMS_PER_PAGE: int = env.int('TILE_ITEMS_PER_PAGE', default=30)
         return
 
     @property
@@ -112,6 +116,10 @@ class Directory(Item):
     @property
     def is_tile(self) -> bool:
         return self.f_is_tile
+
+    @property
+    def slide_show_interval_ms(self) -> int:
+        return self.SLIDE_SHOW_INTERVAL_MS
 
     def cache_children_info(self) -> None:
         l_children: list = query_children(self.f_id)

@@ -24,6 +24,7 @@
 {% endif %}
     {% include 'filesystem/pagination.html' with directory=directory %}
     {% include 'filesystem/create_new.html' with directory=directory %}
+    {% include 'filesystem/slide_show.html' %}
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
         type="text/javascript"></script>
@@ -35,21 +36,19 @@
 <script type="text/javascript">
     const delayedImageLoader = DelayedImageLoader(window, '{% url 'filesystem:index' %}');
     const tileSwitch = TileSwitch(window, '{{ directory.id }}', '{{ directory.type }}', '{{ directory.page }}');
+    const slideShow = SlideShow(window, {{ directory.slide_show_interval_ms }});
     window.onload = () => {
         window.addEventListener('scroll', onScroll);
         document.getElementById('showTile').addEventListener('change', onChangeShowTile);
         if ('{{ directory.is_tile }}' === 'True') {
             document.getElementById('showTile').checked = true;
         }
+        document.getElementById('slide-show-close').addEventListener('click', (ev) => slideShow.stop());
     }
 
-    function onScroll() {
-        delayedImageLoader.scroll();
-    }
+    const onScroll = () => delayedImageLoader.scroll();
 
-    function onChangeShowTile(ev) {
-        tileSwitch.changed(ev);
-    }
+    const onChangeShowTile = (ev) => tileSwitch.changed(ev);
 </script>
 </body>
 </html>

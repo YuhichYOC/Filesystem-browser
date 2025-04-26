@@ -27,9 +27,7 @@ DelayedImageLoader.prototype.focus = function (e) {
     let request = new XMLHttpRequest();
     request.open('GET', this.thumb_url + "?id=" + e.getAttribute('id') + "&content=encoded");
     request.responseType = 'text';
-    request.onload = function () {
-        e.src = request.responseText;
-    }
+    request.onload = () => e.src = request.responseText;
     request.send();
     e.removeAttribute('id');
 }
@@ -51,4 +49,39 @@ TileSwitch.prototype.changed = function (ev) {
     } else {
         this.window.location.href = '?id=' + this.id + '&type=' + this.type + '&page=' + this.page;
     }
+}
+
+const SlideShow = function (w, i) {
+    if (!(this instanceof SlideShow)) {
+        return new SlideShow(w, i);
+    }
+
+    this.window = w;
+    this.interval = undefined;
+    this.interval_ms = i;
+}
+
+SlideShow.prototype.start = function () {
+    const targets = Array.from(this.window.document.querySelectorAll('[data-lightbox]')).map(image => image.getAttribute('href'));
+    if (targets.length === 0) {
+        return;
+    }
+    let index = 0;
+    this.interval = setInterval(() => {
+        this.load(targets[index]);
+        index = (index + 1) % targets.length;
+    }, this.interval_ms);
+}
+
+SlideShow.prototype.load = (target) => fetch(target)
+    .then(res => res.arrayBuffer())
+    .then(bytes => {
+        const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'image/png' }));
+        const i = this.window.document.getElementById('slide-show-image');
+        i.onload = () => URL.revokeObjectURL(url);
+        i.src = url;
+    });
+
+SlideShow.prototype.stop = function () {
+    clearInterval(this.interval);
 }
