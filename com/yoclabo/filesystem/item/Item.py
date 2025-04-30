@@ -32,7 +32,7 @@ env.read_env('.env')
 class Item:
 
     def __init__(self, path: str, sequence: int) -> None:
-        self.f_id: Path = Path(path)
+        self.f_id: str = path
         self.f_type: str = get_type(self.f_id)
         self.f_name: str = get_name(self.f_id)
         self.f_sequence: int = sequence

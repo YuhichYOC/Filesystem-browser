@@ -32,61 +32,65 @@ def get_path_from_root_directory(path: str) -> str:
     return os.path.join(get_root_directory_path(), path[1:]) if path.startswith('/') else os.path.join(get_root_directory_path(), path)
 
 
-def query_ancestors(path: Path, ancestors: list = None) -> list:
-    if str(path) == get_root_directory_path():
+def query_ancestors(path: str, ancestors: list = None) -> list:
+    if path == get_root_directory_path():
         return [path]
-    if len(path.parts) == 1:
+    if len(Path(path).parts) == 1:
         return [path]
     if ancestors is None:
         ancestors = []
-    ancestors = query_ancestors(path.parent, ancestors) + [path]
+    if os.path.isdir(path):
+        ancestors = query_ancestors(os.path.dirname(path), ancestors) + [path]
+    else:
+        ancestors = query_ancestors(os.path.dirname(path), ancestors)
     return ancestors
 
 
-def query_children(path: Path) -> list:
+def query_children(path: str) -> list:
     l_children: list = []
-    for c in path.iterdir():
+    for c in Path(path).iterdir():
         if os.path.isdir(c):
-            l_children.append(c)
-    for c in path.iterdir():
+            l_children.append(str(c))
+    for c in Path(path).iterdir():
         if os.path.isfile(c):
-            l_children.append(c)
+            l_children.append(str(c))
     return l_children
 
 
-def get_type(path: Path) -> str:
-    if path.is_dir():
+def get_type(path: str) -> str:
+    l_p: Path = Path(path)
+    if l_p.is_dir():
         return 'directory'
-    if path.name.startswith('.'):
+    if l_p.name.startswith('.'):
         return 'hidden_file'
-    if path.suffix == '.txt' or path.suffix == '.text':
+    if l_p.suffix == '.txt' or l_p.suffix == '.text':
         return 'text'
-    if path.suffix == '.jpg' or path.suffix == '.jpeg' or path.suffix == '.png' or path.suffix == '.gif':
+    if l_p.suffix == '.jpg' or l_p.suffix == '.jpeg' or l_p.suffix == '.png' or l_p.suffix == '.gif':
         return 'image'
-    if path.suffix == '.pdf':
+    if l_p.suffix == '.pdf':
         return 'pdf'
-    if (path.suffix == '.mp4' or path.suffix == '.mp3' or path.suffix == '.m4a'
-            or path.suffix == '.flv' or path.suffix == '.wmv'):
+    if (l_p.suffix == '.mp4' or l_p.suffix == '.mp3' or l_p.suffix == '.m4a'
+            or l_p.suffix == '.flv' or l_p.suffix == '.wmv'):
         return 'media'
     return 'other'
 
 
-def create_directory(path: Path) -> None:
+def create_directory(path: str) -> None:
     if os.path.exists(path):
         return
     os.mkdir(path)
     return
 
 
-def get_name(path: Path) -> str:
-    return path.name
+def get_name(path: str) -> str:
+    return os.path.basename(path)
 
 
-def get_text_content(path: Path) -> str:
+def get_text_content(path: str) -> str:
     return open(path).read()
 
 
-def update_text_content(path: Path, content: str) -> None:
+def update_text_content(path: str, content: str) -> None:
     if os.path.isdir(path):
         return
     with open(path, 'w') as cont:
@@ -94,11 +98,11 @@ def update_text_content(path: Path, content: str) -> None:
     return
 
 
-def get_web_encoded_image(path: Path) -> str:
+def get_web_encoded_image(path: str) -> str:
     return 'data:image/jpeg;base64,' + base64.b64encode(open(str(path), 'rb').read()).decode()
 
 
-def get_image_bytearray(path: Path) -> bytes:
+def get_image_bytearray(path: str) -> bytes:
     return open(str(path), 'rb').read()
 
 
