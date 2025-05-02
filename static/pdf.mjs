@@ -60,13 +60,21 @@ window.onload = () => {
 
 let pdfCanvas = null;
 
-function next() {pdfCanvas.next();}
+function next() {
+    pdfCanvas.next();
+}
 
-function prev() {pdfCanvas.prev();}
+function prev() {
+    pdfCanvas.prev();
+}
 
-function rotateLeft90() {pdfCanvas.rotateLeft90();}
+function rotateLeft90() {
+    pdfCanvas.rotateLeft90();
+}
 
-function rotateRight90() {pdfCanvas.rotateRight90();}
+function rotateRight90() {
+    pdfCanvas.rotateRight90();
+}
 
 export function load(url) {
     pdfCanvas = new PdfCanvas(document.getElementById('pdf-canvas'));

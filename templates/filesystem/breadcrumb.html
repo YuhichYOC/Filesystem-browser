@@ -3,9 +3,9 @@
         <ol class="breadcrumb">
 {% for a in directory.ancestors %}
     {% if directory.is_tile %}
-            <li class="breadcrumb-item"><a href="?id={{ a.id }}&tile=true">{{ a.name }}</a></li>
+            <li class="breadcrumb-item"><a href="?id={{ a.id }}&type={{ a.type }}&name={{ a.name }}&tile=true">{{ a.name }}</a></li>
     {% else %}
-            <li class="breadcrumb-item"><a href="?id={{ a.id }}">{{ a.name }}</a></li>
+            <li class="breadcrumb-item"><a href="?id={{ a.id }}&type={{ a.type }}&name={{ a.name }}">{{ a.name }}</a></li>
     {% endif %}
 {% endfor %}
         </ol>

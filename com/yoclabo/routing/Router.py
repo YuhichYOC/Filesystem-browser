@@ -21,6 +21,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.http import FileResponse
 from django.http.response import HttpResponse
 
+from com.yoclabo.filesystem.query.Query import ITEM_TYPE_DIRECTORY, ITEM_TYPE_IMAGE
 from com.yoclabo.routing import BrowserHandler, FilesystemHandler
 
 
@@ -64,8 +65,9 @@ class Router:
 
 class BrowserRouter(Router):
 
-    def __init__(self, request: WSGIRequest):
+    def __init__(self, request: WSGIRequest) -> None:
         super().__init__(request)
+        return
 
     def run(self) -> HttpResponse:
         h = BrowserHandler.BrowserHandler(self.request)
@@ -131,9 +133,9 @@ class FilesystemRouter(Router):
             return False
         if not self.has_get_param('type'):
             return False
-        if self.get_param('type') == 'directory':
+        if self.get_param('type') == ITEM_TYPE_DIRECTORY:
             return False
-        if self.get_param('type') == 'image':
+        if self.get_param('type') == ITEM_TYPE_IMAGE:
             if self.has_get_param('content'):
                 return False
         return True

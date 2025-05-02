@@ -76,7 +76,7 @@ SlideShow.prototype.start = function () {
 SlideShow.prototype.load = (target) => fetch(target)
     .then(res => res.arrayBuffer())
     .then(bytes => {
-        const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'image/png' }));
+        const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], {type: 'image/png'}));
         const i = this.window.document.getElementById('slide-show-image');
         i.onload = () => URL.revokeObjectURL(url);
         i.src = url;

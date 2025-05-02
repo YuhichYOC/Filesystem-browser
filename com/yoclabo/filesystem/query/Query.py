@@ -24,25 +24,41 @@ import shutil
 import stat
 from pathlib import Path
 
+from django.utils.text import get_valid_filename
+
 from browser.settings import BASE_DIR
 from com.yoclabo.setting.Server import get_root_directory_path
 
+ITEM_TYPE_DIRECTORY = 'directory'
+
+ITEM_TYPE_TEXT = 'text'
+
+ITEM_TYPE_IMAGE = 'image'
+
+ITEM_TYPE_PDF = 'pdf'
+
+ITEM_TYPE_MEDIA = 'media'
+
+ITEM_TYPE_OTHER = 'other'
+
 
 def get_path_from_root_directory(path: str) -> str:
-    return os.path.join(get_root_directory_path(), path[1:]) if path.startswith('/') else os.path.join(get_root_directory_path(), path)
+    return os.path.join(get_root_directory_path(), path[1:]) if path.startswith('/') else os.path.join(
+        get_root_directory_path(), path)
 
 
-def query_ancestors(path: str, ancestors: list = None) -> list:
+def query_ancestors(path: str, type: str, ancestors: list = None) -> list:
     if path == get_root_directory_path():
-        return [path]
+        return [{'id': path, 'type': ITEM_TYPE_DIRECTORY, 'name': os.path.basename(path)}]
     if len(Path(path).parts) == 1:
-        return [path]
+        return [{'id': path, 'type': ITEM_TYPE_DIRECTORY, 'name': os.path.basename(path)}]
     if ancestors is None:
         ancestors = []
     if os.path.isdir(path):
-        ancestors = query_ancestors(os.path.dirname(path), ancestors) + [path]
+        ancestors = query_ancestors(os.path.dirname(path), ITEM_TYPE_DIRECTORY, ancestors) + [
+            {'id': path, 'type': ITEM_TYPE_DIRECTORY, 'name': os.path.basename(path)}]
     else:
-        ancestors = query_ancestors(os.path.dirname(path), ancestors)
+        ancestors = query_ancestors(os.path.dirname(path), ITEM_TYPE_DIRECTORY, ancestors)
     return ancestors
 
 
@@ -50,47 +66,60 @@ def query_children(path: str) -> list:
     l_children: list = []
     for c in Path(path).iterdir():
         if os.path.isdir(c):
-            l_children.append(str(c))
+            l_children.append({'id': str(c), 'type': ITEM_TYPE_DIRECTORY, 'name': os.path.basename(str(c))})
     for c in Path(path).iterdir():
         if os.path.isfile(c):
-            l_children.append(str(c))
+            l_file_name = os.path.basename(str(c))
+            l_children.append({'id': str(c), 'type': get_type(l_file_name), 'name': l_file_name})
     return l_children
 
 
 def get_type(path: str) -> str:
     l_p: Path = Path(path)
     if l_p.is_dir():
-        return 'directory'
+        return ITEM_TYPE_DIRECTORY
     if l_p.name.startswith('.'):
         return 'hidden_file'
     if l_p.suffix == '.txt' or l_p.suffix == '.text':
-        return 'text'
+        return ITEM_TYPE_TEXT
     if l_p.suffix == '.jpg' or l_p.suffix == '.jpeg' or l_p.suffix == '.png' or l_p.suffix == '.gif':
-        return 'image'
+        return ITEM_TYPE_IMAGE
     if l_p.suffix == '.pdf':
-        return 'pdf'
+        return ITEM_TYPE_PDF
     if (l_p.suffix == '.mp4' or l_p.suffix == '.mp3' or l_p.suffix == '.m4a'
             or l_p.suffix == '.flv' or l_p.suffix == '.wmv'):
-        return 'media'
-    return 'other'
+        return ITEM_TYPE_MEDIA
+    return ITEM_TYPE_OTHER
 
 
-def create_directory(path: str) -> None:
-    if os.path.exists(path):
+def create_directory(path: str, name: str) -> None:
+    l_path = os.path.join(path, get_valid_filename(name))
+    if os.path.exists(l_path):
         return
-    os.mkdir(path)
+    os.mkdir(l_path)
     return
 
 
-def get_name(path: str) -> str:
-    return os.path.basename(path)
+def create_file(path: str, name: str, content: any) -> None:
+    name = get_valid_filename(name if name.endswith('.txt') or name.endswith('.text') else name + '.txt')
+    l_path = os.path.join(path, name)
+    if os.path.exists(l_path):
+        return
+    if isinstance(content, str):
+        with open(l_path, 'w') as dest:
+            dest.write(content)
+    if isinstance(content, dict):
+        with open(l_path, 'wb+') as dest:
+            for c in content['uploadFile'].chunks():
+                dest.write(c)
+    return
 
 
 def get_text_content(path: str) -> str:
     return open(path).read()
 
 
-def update_text_content(path: str, content: str) -> None:
+def update_text_content(path: str, name: str, content: str) -> None:
     if os.path.isdir(path):
         return
     with open(path, 'w') as cont:

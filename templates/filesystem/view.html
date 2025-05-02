@@ -14,7 +14,7 @@
         {% include 'filesystem/breadcrumb.html' with directory=document %}
     </div>
     <div class="row my-1">
-        <a href="{% url 'filesystem:download' %}?id={{ document.id }}">Download</a>
+        <a href="{% url 'filesystem:download' %}?id={{ document.id }}&type={{ document.type }}&name={{ document.name }}">Download</a>
     </div>
 {% if document.type == 'image' %}
     <div class="row d-flex h-100 flex-fill justify-content-center my-1">
@@ -42,7 +42,7 @@
         <embed src="{% static document.name %}">
     </div>
 {% elif document.type == 'text' %}
-    <form method="post" action="?id={{ document.id }}&type=text" enctype="multipart/form-data">
+    <form method="post" action="?id={{ document.id }}&type={{ document.type }}&name={{ document.name }}" enctype="multipart/form-data">
         <div class="row d-flex h-100 flex-fill justify-content-center fieldwrapper my-1">
             {% csrf_token %}
             <textarea class="form-control" name="text_content" oninput="resize(this)">{{ document.content }}</textarea>

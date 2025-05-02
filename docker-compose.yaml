@@ -10,5 +10,5 @@ services:
             - "443:443"
         volumes:
             - </path/to/your/smb/share/directory>:</path/to/share/directory/in/your/container>
-            - ./:/opt/browser
+            - ./:/opt/filesystem/browser
         command: supervisord -c /etc/supervisor/conf.d/supervisord.conf

@@ -23,83 +23,82 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 
 from com.yoclabo.filesystem.item.Item import Item, Directory, Text, Image, Pdf, Media
-from com.yoclabo.filesystem.query.Query import *
-from com.yoclabo.setting import Server
+from com.yoclabo.filesystem.query.Query import ITEM_TYPE_TEXT, ITEM_TYPE_IMAGE, ITEM_TYPE_PDF, ITEM_TYPE_MEDIA
 
 
 def go_to_root(page: int, tile: bool) -> dict:
-    l_d = Directory(Server.get_root_directory_path(), 1)
+    l_d = Directory('', '', 1)
     l_d.prepare_browse(page, tile)
     return {'directory': l_d}
 
 
-def go_to_directory(path: str, page: int, tile: bool) -> dict:
-    l_d = Directory(get_path_from_root_directory(path), 1)
+def go_to_directory(id: str, name: str, page: int, tile: bool) -> dict:
+    l_d = Directory(id, name, 1)
     l_d.prepare_browse(page, tile)
     return {'directory': l_d}
 
 
-def create_directory(path: str, name: str) -> None:
-    l_d = Directory(get_path_from_root_directory(path), 1)
-    l_d.create_directory(name)
+def create_directory(id: str, parent_name: str, child_name: str) -> None:
+    l_d = Directory(id, parent_name, 1)
+    l_d.create_directory(child_name)
     return
 
 
-def create_text_file(path: str, name: str, content: str) -> None:
-    l_d = Directory(get_path_from_root_directory(path), 1)
-    l_d.create_text_file(name, content)
+def create_text_file(id: str, parent_name: str, child_name: str, content: str) -> None:
+    l_d = Directory(id, parent_name, 1)
+    l_d.create_text_file(child_name, content)
     return
 
 
-def save_file(path: str, files: dict) -> None:
-    l_d = Directory(get_path_from_root_directory(path), 1)
+def save_file(id: str, parent_name: str, files: dict) -> None:
+    l_d = Directory(id, parent_name, 1)
     l_d.save_file(files)
     return
 
 
-def view_text(path: str) -> dict:
-    l_t = Text(get_path_from_root_directory(path), 1)
+def view_text(id: str, name: str) -> dict:
+    l_t = Text(id, name, 1)
     l_t.prepare_view()
     return {'document': l_t}
 
 
-def update_text_content(path: str, new_content: str) -> None:
-    l_t = Text(get_path_from_root_directory(path), 1)
+def update_text_content(id: str, name: str, new_content: str) -> None:
+    l_t = Text(id, name, 1)
     l_t.update_text_content(new_content)
     return
 
 
-def view_image(path: str) -> dict:
-    l_i = Image(get_path_from_root_directory(path), 1)
+def view_image(id: str, name: str) -> dict:
+    l_i = Image(id, name, 1)
     l_i.prepare_view()
     return {'document': l_i}
 
 
-def view_pdf(path: str) -> dict:
-    l_p = Pdf(get_path_from_root_directory(path), 1)
+def view_pdf(id: str, name: str) -> dict:
+    l_p = Pdf(id, name, 1)
     l_p.prepare_view()
     return {'document': l_p}
 
 
-def view_media(path: str) -> dict:
-    l_m = Media(get_path_from_root_directory(path), 1)
+def view_media(id: str, name: str) -> dict:
+    l_m = Media(id, name, 1)
     l_m.prepare_view()
     return {'document': l_m}
 
 
-def view_others(path: str) -> dict:
-    l_o = Item(get_path_from_root_directory(path), 1)
+def view_others(id: str, type: str, name: str) -> dict:
+    l_o = Item(id, type, name, 1)
     l_o.fill_ancestors()
     return {'document': l_o}
 
 
-def get_web_encoded_image(path: str) -> str:
-    l_i = Image(get_path_from_root_directory(path), 1)
+def get_web_encoded_image(id: str) -> str:
+    l_i = Image(id, '', 1)
     return l_i.get_web_encoded_image()
 
 
-def get_image_bytearray(path: str) -> bytes:
-    l_i = Image(get_path_from_root_directory(path), 1)
+def get_image_bytearray(id: str) -> bytes:
+    l_i = Image(id, '', 1)
     return l_i.get_image_bytearray()
 
 
@@ -143,7 +142,7 @@ class FilesystemWebEncodedImageHandler(FilesystemHandler):
 class FilesystemUpdateTextContentHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
-        update_text_content(self.get_param('id'), self.get_param('text_content'))
+        update_text_content(self.get_param('id'), self.get_param('name'), self.get_param('text_content'))
         h = FilesystemDocumentHandler(self.request)
         return h.run()
 
@@ -151,44 +150,60 @@ class FilesystemUpdateTextContentHandler(FilesystemHandler):
 class FilesystemDocumentHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
-        if self.get_param('type') == 'text':
-            return render(self.request, 'filesystem/view.html', view_text(self.get_param('id')))
-        if self.get_param('type') == 'media':
-            return render(self.request, 'filesystem/view.html', view_media(self.get_param('id')))
-        if self.get_param('type') == 'pdf':
-            return render(self.request, 'filesystem/view.html', view_pdf(self.get_param('id')))
-        if self.get_param('type') == 'image':
-            return render(self.request, 'filesystem/view.html', view_image(self.get_param('id')))
-        return render(self.request, 'filesystem/view.html', view_others(self.get_param('id')))
+        if self.get_param('type') == ITEM_TYPE_TEXT:
+            return render(
+                self.request, 'filesystem/view.html', view_text(self.get_param('id'), self.get_param('name'))
+            )
+        if self.get_param('type') == ITEM_TYPE_IMAGE:
+            return render(
+                self.request, 'filesystem/view.html', view_image(self.get_param('id'), self.get_param('name'))
+            )
+        if self.get_param('type') == ITEM_TYPE_PDF:
+            return render(
+                self.request, 'filesystem/view.html', view_pdf(self.get_param('id'), self.get_param('name'))
+            )
+        if self.get_param('type') == ITEM_TYPE_MEDIA:
+            return render(
+                self.request, 'filesystem/view.html', view_media(self.get_param('id'), self.get_param('name'))
+            )
+        return render(
+            self.request, 'filesystem/view.html',
+            view_others(self.get_param('id'), self.get_param('type'), self.get_param('name'))
+        )
 
 
 class FilesystemDownloadHandler(FilesystemHandler):
 
     def run(self) -> FileResponse:
-        return FileResponse(open(get_path_from_root_directory(self.get_param('id')), "rb"))
+        return FileResponse(get_image_bytearray(self.get_param('id')))
 
 
 class FilesystemFilePostHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
-        save_file(self.get_param('id'), self.request.FILES)
-        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
+        save_file(self.get_param('id'), self.get_param('name'), self.request.FILES)
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') \
+            else FilesystemRootDirectoryHandler(self.request)
         return h.run()
 
 
 class FilesystemCreateTextFileHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
-        create_text_file(self.get_param('id'), self.get_param('textFileName'), self.get_param('content'))
-        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
+        create_text_file(
+            self.get_param('id'), self.get_param('name'), self.get_param('textFileName'), self.get_param('content')
+        )
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') \
+            else FilesystemRootDirectoryHandler(self.request)
         return h.run()
 
 
 class FilesystemCreateDirectoryHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
-        create_directory(self.get_param('id'), self.get_param('directoryName'))
-        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') else FilesystemRootDirectoryHandler(self.request)
+        create_directory(self.get_param('id'), self.get_param('name'), self.get_param('directoryName'))
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') \
+            else FilesystemRootDirectoryHandler(self.request)
         return h.run()
 
 
@@ -201,8 +216,10 @@ class FilesystemDirectoryHandler(FilesystemHandler):
         l_tile: bool = False
         if self.has_get_param('tile'):
             l_tile = bool(self.get_param('tile'))
-        return render(self.request, 'filesystem/browse.html',
-                      go_to_directory(self.get_param('id'), l_page, l_tile))
+        return render(
+            self.request, 'filesystem/browse.html',
+            go_to_directory(self.get_param('id'), self.get_param('name'), l_page, l_tile)
+        )
 
 
 class FilesystemRootDirectoryHandler(FilesystemHandler):
@@ -214,5 +231,6 @@ class FilesystemRootDirectoryHandler(FilesystemHandler):
         l_tile: bool = False
         if self.has_get_param('tile'):
             l_tile = bool(self.get_param('tile'))
-        return render(self.request, 'filesystem/browse.html',
-                      go_to_root(l_page, l_tile))
+        return render(
+            self.request, 'filesystem/browse.html', go_to_root(l_page, l_tile)
+        )

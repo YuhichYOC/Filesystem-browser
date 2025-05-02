@@ -17,24 +17,27 @@
 # limitations under the License.
 #
 
-import os
 import urllib.parse
 
-from django.utils.text import get_valid_filename
+import environ
 
-from com.yoclabo.filesystem.query.Query import *
+from com.yoclabo.filesystem.query.Query import (
+    ITEM_TYPE_DIRECTORY, ITEM_TYPE_TEXT, ITEM_TYPE_IMAGE, ITEM_TYPE_PDF, ITEM_TYPE_MEDIA,
+    get_path_from_root_directory, query_ancestors, query_children, create_directory, create_file,
+    get_text_content, update_text_content, get_web_encoded_image, get_image_bytearray, copy_file_to_static
+)
 from com.yoclabo.setting import Server
 
-import environ
 env = environ.Env()
 env.read_env('.env')
 
+
 class Item:
 
-    def __init__(self, path: str, sequence: int) -> None:
-        self.f_id: str = path
-        self.f_type: str = get_type(self.f_id)
-        self.f_name: str = get_name(self.f_id)
+    def __init__(self, id: str, type: str, name: str, sequence: int) -> None:
+        self.f_id: str = get_path_from_root_directory(id)
+        self.f_type: str = type
+        self.f_name: str = name
         self.f_sequence: int = sequence
         self.f_ancestors: list = []
         return
@@ -66,15 +69,15 @@ class Item:
         return 'border-top border-bottom'
 
     def fill_ancestors(self) -> None:
-        for a in query_ancestors(self.f_id):
-            self.f_ancestors.append(Item(str(a), 0))
+        for a in query_ancestors(self.f_id, self.f_type):
+            self.f_ancestors.append(Item(a['id'], a['type'], a['name'], 0))
         return
 
 
 class Directory(Item):
 
-    def __init__(self, path: str, sequence: int) -> None:
-        super().__init__(path, sequence)
+    def __init__(self, id: str, name: str, sequence: int) -> None:
+        super().__init__(id, ITEM_TYPE_DIRECTORY, name, sequence)
         self.f_children_info: list = []
         self.f_children: list = []
         self.f_page: int = 0
@@ -125,16 +128,16 @@ class Directory(Item):
         l_children: list = query_children(self.f_id)
         i: int = 1
         for child in l_children:
-            if get_type(child) == 'directory':
-                self.f_children_info.append(Directory(str(child), i))
-            elif get_type(child) == 'image':
-                self.f_children_info.append(Image(str(child), i))
-            elif get_type(child) == 'pdf':
-                self.f_children_info.append(Pdf(str(child), i))
-            elif get_type(child) == 'media':
-                self.f_children_info.append(Media(str(child), i))
+            if child['type'] == ITEM_TYPE_DIRECTORY:
+                self.f_children_info.append(Directory(child['id'], child['name'], i))
+            elif child['type'] == ITEM_TYPE_IMAGE:
+                self.f_children_info.append(Image(child['id'], child['name'], i))
+            elif child['type'] == ITEM_TYPE_PDF:
+                self.f_children_info.append(Pdf(child['id'], child['name'], i))
+            elif child['type'] == ITEM_TYPE_MEDIA:
+                self.f_children_info.append(Media(child['id'], child['name'], i))
             else:
-                self.f_children_info.append(Item(str(child), i))
+                self.f_children_info.append(Item(child['id'], child['type'], child['name'], i))
             i += 1
         return
 
@@ -159,29 +162,24 @@ class Directory(Item):
     def create_directory(self, name: str) -> None:
         if not name:
             return
-        l_directory_path = Path(os.path.join(get_path_from_root_directory(self.id), get_valid_filename(name)))
-        create_directory(l_directory_path)
+        create_directory(get_path_from_root_directory(self.id), name)
         return
 
     def create_text_file(self, name: str, content: str) -> None:
         if not name:
             return
-        l_text_file_path = Path(os.path.join(get_path_from_root_directory(self.id), get_valid_filename(name if name.endswith('.txt') else name + '.txt')))
-        update_text_content(l_text_file_path, content)
+        create_file(self.f_id, name, content)
         return
 
     def save_file(self, files: dict) -> None:
-        l_dir = get_path_from_root_directory(self.id)
-        with open(os.path.join(l_dir, get_valid_filename(files['uploadFile'].name)), 'wb+') as dest:
-            for c in files['uploadFile'].chunks():
-                dest.write(c)
+        create_file(self.f_id, files['uploadFile'].name, files)
         return
 
 
 class Text(Item):
 
-    def __init__(self, path: str, sequence: int) -> None:
-        super().__init__(path, sequence)
+    def __init__(self, id: str, name: str, sequence: int) -> None:
+        super().__init__(id, ITEM_TYPE_TEXT, name, sequence)
         self.f_content: str = ''
         return
 
@@ -194,7 +192,7 @@ class Text(Item):
         return
 
     def update_text_content(self, new_content: str) -> None:
-        update_text_content(self.f_id, new_content)
+        update_text_content(self.f_id, self.f_name, new_content)
         return
 
     def prepare_view(self) -> None:
@@ -205,8 +203,8 @@ class Text(Item):
 
 class Image(Item):
 
-    def __init__(self, path: str, sequence: int) -> None:
-        super().__init__(path, sequence)
+    def __init__(self, id: str, name: str, sequence: int) -> None:
+        super().__init__(id, ITEM_TYPE_IMAGE, name, sequence)
         self.f_image: str = ''
         return
 
@@ -228,25 +226,25 @@ class Image(Item):
 
 class Pdf(Item):
 
-    def __init__(self, path: str, sequence: int) -> None:
-        super().__init__(path, sequence)
+    def __init__(self, id: str, name: str, sequence: int) -> None:
+        super().__init__(id, ITEM_TYPE_PDF, name, sequence)
         return
 
     def prepare_view(self) -> None:
         self.fill_ancestors()
-        copy_file_to_static(str(self.f_id), self.f_name)
+        copy_file_to_static(self.f_id, self.f_name)
         return
 
 
 class Media(Item):
 
-    def __init__(self, path: str, sequence: int) -> None:
-        super().__init__(path, sequence)
+    def __init__(self, id: str, name: str, sequence: int) -> None:
+        super().__init__(id, ITEM_TYPE_MEDIA, name, sequence)
         return
 
     def prepare_view(self) -> None:
         self.fill_ancestors()
-        copy_file_to_static(str(self.f_id), self.f_name)
+        copy_file_to_static(self.f_id, self.f_name)
         return
 
 

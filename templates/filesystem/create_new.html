@@ -21,9 +21,9 @@
                 <div class="tab-content p-3">
                     <div class="tab-pane active" id="tp1">
 {% if directory.is_tile %}
-                        <form method="post" action="?id={{ directory.id }}&page={{ directory.page }}&tile=true">
+                        <form method="post" action="?id={{ directory.id }}&type={{ directory.type }}&name={{ directory.name }}&page={{ directory.page }}&tile=true">
 {% else %}
-                        <form method="post" action="?id={{ directory.id }}&page={{ directory.page }}">
+                        <form method="post" action="?id={{ directory.id }}&type={{ directory.type }}&name={{ directory.name }}&page={{ directory.page }}">
 {% endif %}
                             {% csrf_token %}
                             <div class="input-group pt-1">
@@ -35,9 +35,9 @@
                     </div>
                     <div class="tab-pane" id="tp2">
 {% if directory.is_tile %}
-                        <form method="post" action="?id={{ directory.id }}&page={{ directory.page }}&tile=true">
+                        <form method="post" action="?id={{ directory.id }}&type={{ directory.type }}&name={{ directory.name }}&page={{ directory.page }}&tile=true">
 {% else %}
-                        <form method="post" action="?id={{ directory.id }}&page={{ directory.page }}">
+                        <form method="post" action="?id={{ directory.id }}&type={{ directory.type }}&name={{ directory.name }}&page={{ directory.page }}">
 {% endif %}
                             {% csrf_token %}
                             <div class="input-group pt-1">
@@ -53,9 +53,9 @@
                     </div>
                     <div class="tab-pane" id="tp3">
 {% if directory.is_tile %}
-                        <form method="post" action="?id={{ directory.id }}&page={{ directory.page }}&tile=true" enctype="multipart/form-data">
+                        <form method="post" action="?id={{ directory.id }}&type={{ directory.type }}&name={{ directory.name }}&page={{ directory.page }}&tile=true" enctype="multipart/form-data">
 {% else %}
-                        <form method="post" action="?id={{ directory.id }}&page={{ directory.page }}" enctype="multipart/form-data">
+                        <form method="post" action="?id={{ directory.id }}&type={{ directory.type }}&name={{ directory.name }}&page={{ directory.page }}" enctype="multipart/form-data">
 {% endif %}
                             {% csrf_token %}
                             <div class="input-group pt-1">
