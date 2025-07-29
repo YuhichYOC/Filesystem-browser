@@ -168,6 +168,8 @@ class Directory(Item):
     def create_text_file(self, name: str, content: str) -> None:
         if not name:
             return
+        if not name.endswith('.txt') or not name.endswith('.text'):
+            name += '.txt'
         create_file(self.f_id, name, content)
         return
 

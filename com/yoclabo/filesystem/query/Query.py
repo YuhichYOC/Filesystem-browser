@@ -101,7 +101,7 @@ def create_directory(path: str, name: str) -> None:
 
 
 def create_file(path: str, name: str, content: any) -> None:
-    name = get_valid_filename(name if name.endswith('.txt') or name.endswith('.text') else name + '.txt')
+    name = get_valid_filename(name)
     l_path = os.path.join(path, name)
     if os.path.exists(l_path):
         return
