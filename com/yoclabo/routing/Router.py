@@ -79,6 +79,15 @@ class FilesystemRouter(Router):
     def __init__(self, request: WSGIRequest):
         super().__init__(request)
 
+    def is_rename(self) -> bool:
+        if not self.request.method == 'POST':
+            return False
+        if not self.has_post_param('oldName'):
+            return False
+        if not self.has_post_param('newName'):
+            return False
+        return True
+
     def is_file_post(self) -> bool:
         if not self.request.method == 'POST':
             return False
@@ -153,6 +162,10 @@ class FilesystemRouter(Router):
                 return False
         return True
 
+    def respond_rename(self) -> HttpResponse:
+        h = FilesystemHandler.FilesystemRenameHandler(self.request)
+        return run_filesystem_handler(h)
+
     def respond_post_file(self) -> HttpResponse:
         h = FilesystemHandler.FilesystemFilePostHandler(self.request)
         return run_filesystem_handler(h)
@@ -194,6 +207,8 @@ class FilesystemRouter(Router):
         return run_filesystem_handler(h)
 
     def run(self) -> HttpResponse:
+        if self.is_rename():
+            return self.respond_rename()
         if self.is_file_post():
             return self.respond_post_file()
         if self.is_text_update_post():

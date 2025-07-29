@@ -2,13 +2,16 @@
 {% for child in directory.children %}
 <div class="row align-items-center my-1 {{ child.row_display_attributes }}">
     <span class="col-sm-12 col-lg-2 text-center resize-font-l">{{ child.sequence }}</span>
-    <span class="col-sm-12 col-lg-2 text-center resize-font-l">
+    <span class="col-sm-12 col-lg-2 text-center resize-font-l d-inline-flex align-items-center">
     {% if child.type == 'directory' and directory.is_tile %}
         <a class="flex-fill" href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}&page=1&tile=true">{{ child.name }}</a>
+        {% include 'filesystem/rename.html' with child=child directory=directory %}
     {% elif child.type == 'directory' %}
         <a class="flex-fill" href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}&page=1">{{ child.name }}</a>
+        {% include 'filesystem/rename.html' with child=child directory=directory %}
     {% else %}
         <a target="_blank" class="flex-fill" href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}">{{ child.name }}</a>
+        {% include 'filesystem/rename.html' with child=child directory=directory %}
     {% endif %}
     </span>
     {% if child.type == 'directory' %}

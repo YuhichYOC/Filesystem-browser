@@ -6,12 +6,18 @@
         <a href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}&page=1&tile=true">
             <img src="{% static 'folder.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
         </a>
-        <span style="display: block;">{{ child.name }}</span>
+        <span class="text-center resize-font-l d-flex align-items-center justify-content-center">
+            {{ child.name }}
+            {% include 'filesystem/rename.html' with child=child directory=directory %}
+        </span>
     {% elif child.type == 'directory' %}
         <a href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}&page=1">
             <img src="{% static 'folder.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
         </a>
-        <span style="display: block;">{{ child.name }}</span>
+        <span class="text-center resize-font-l d-flex align-items-center justify-content-center">
+            {{ child.name }}
+            {% include 'filesystem/rename.html' with child=child directory=directory %}
+        </span>
     {% elif child.type == 'image' %}
         <span class="d-flex align-items-center justify-content-center">
             <a href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}&content=bytes" data-lightbox="image" data-title="image">
@@ -19,11 +25,18 @@
                     style="max-height: 180px; object-fit: contain;" id="{{ child.id }}">
             </a>
         </span>
+        <span class="text-center resize-font-l d-flex align-items-center justify-content-center">
+            {{ child.name }}
+            {% include 'filesystem/rename.html' with child=child directory=directory %}
+        </span>
     {% else %}
         <a target="_blank" href="?id={{ child.id }}&type={{ child.type }}&name={{ child.name }}">
             <img src="{% static 'other.png' %}" alt="{{ child.name }}" style="max-height: 180px;">
         </a>
-        <span style="display: block;">{{ child.name }}</span>
+        <span class="text-center resize-font-l d-flex align-items-center justify-content-center">
+            {{ child.name }}
+            {% include 'filesystem/rename.html' with child=child directory=directory %}
+        </span>
     {% endif %}
     </span>
 {% endfor %}

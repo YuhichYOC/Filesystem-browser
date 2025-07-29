@@ -127,6 +127,17 @@ def update_text_content(path: str, name: str, content: str) -> None:
     return
 
 
+def rename(path: str, old_name: str, new_name: str) -> None:
+    if not new_name:
+        return
+    old_name = get_valid_filename(old_name)
+    if not os.path.exists(os.path.join(path, old_name)):
+        old_name = old_name.replace('_', ' ')
+    new_name = get_valid_filename(new_name)
+    os.rename(os.path.join(path, old_name), os.path.join(path, new_name))
+    return
+
+
 def get_web_encoded_image(path: str) -> str:
     return 'data:image/jpeg;base64,' + base64.b64encode(open(str(path), 'rb').read()).decode()
 

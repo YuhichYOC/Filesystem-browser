@@ -56,6 +56,12 @@ def save_file(id: str, parent_name: str, files: dict) -> None:
     return
 
 
+def rename(parent_id: str, parent_name:str, old_name: str, new_name: str) -> None:
+    l_d = Directory(parent_id, parent_name, 1)
+    l_d.rename(old_name, new_name)
+    return
+
+
 def view_text(id: str, name: str) -> dict:
     l_t = Text(id, name, 1)
     l_t.prepare_view()
@@ -202,6 +208,15 @@ class FilesystemCreateDirectoryHandler(FilesystemHandler):
 
     def run(self) -> HttpResponse:
         create_directory(self.get_param('id'), self.get_param('name'), self.get_param('directoryName'))
+        h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') \
+            else FilesystemRootDirectoryHandler(self.request)
+        return h.run()
+
+
+class FilesystemRenameHandler(FilesystemHandler):
+
+    def run(self) -> HttpResponse:
+        rename(self.get_param('id'), self.get_param('name'), self.get_param('oldName'), self.get_param('newName'))
         h = FilesystemDirectoryHandler(self.request) if self.has_get_param('id') \
             else FilesystemRootDirectoryHandler(self.request)
         return h.run()

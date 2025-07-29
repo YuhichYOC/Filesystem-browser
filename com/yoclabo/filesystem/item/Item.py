@@ -24,7 +24,7 @@ import environ
 from com.yoclabo.filesystem.query.Query import (
     ITEM_TYPE_DIRECTORY, ITEM_TYPE_TEXT, ITEM_TYPE_IMAGE, ITEM_TYPE_PDF, ITEM_TYPE_MEDIA,
     get_path_from_root_directory, query_ancestors, query_children, create_directory, create_file,
-    get_text_content, update_text_content, get_web_encoded_image, get_image_bytearray, copy_file_to_static
+    get_text_content, update_text_content, rename, get_web_encoded_image, get_image_bytearray, copy_file_to_static
 )
 from com.yoclabo.setting import Server
 
@@ -175,6 +175,10 @@ class Directory(Item):
 
     def save_file(self, files: dict) -> None:
         create_file(self.f_id, files['uploadFile'].name, files)
+        return
+
+    def rename(self, old_name: str, new_name: str) -> None:
+        rename(self.f_id, old_name, new_name)
         return
 
 
