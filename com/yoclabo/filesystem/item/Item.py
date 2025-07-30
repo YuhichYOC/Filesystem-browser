@@ -73,6 +73,9 @@ class Item:
             self.f_ancestors.append(Item(a['id'], a['type'], a['name'], 0))
         return
 
+    def get_quoted_name(self) -> str:
+        return urllib.parse.quote(self.f_name)
+
 
 class Directory(Item):
 

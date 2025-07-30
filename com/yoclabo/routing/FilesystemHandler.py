@@ -108,6 +108,11 @@ def get_image_bytearray(id: str) -> bytes:
     return l_i.get_image_bytearray()
 
 
+def get_quoted_name(id: str, type: str, name: str) -> str:
+    l_i = Item(id, type, name, 1)
+    return l_i.get_quoted_name()
+
+
 class FilesystemHandler:
 
     def __init__(self, request: WSGIRequest) -> None:
@@ -181,7 +186,9 @@ class FilesystemDocumentHandler(FilesystemHandler):
 class FilesystemDownloadHandler(FilesystemHandler):
 
     def run(self) -> FileResponse:
-        return FileResponse(get_image_bytearray(self.get_param('id')))
+        res = FileResponse(get_image_bytearray(self.get_param('id')))
+        res['Content-Disposition'] = f"attachment; filename*=UTF-8''{get_quoted_name(self.get_param('id'), self.get_param('type'), self.get_param('name'))}"
+        return res
 
 
 class FilesystemFilePostHandler(FilesystemHandler):
