@@ -17,12 +17,14 @@
 # limitations under the License.
 #
 
+from typing import IO
+
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import FileResponse
 from django.http.response import HttpResponse
 from django.shortcuts import render
 
-from com.yoclabo.filesystem.item.Item import Item, Directory, Text, Image, Pdf, Media
+from com.yoclabo.filesystem.item.Item import Item, Directory, File, Text, Image, Pdf, Media
 from com.yoclabo.filesystem.query.Query import ITEM_TYPE_TEXT, ITEM_TYPE_IMAGE, ITEM_TYPE_PDF, ITEM_TYPE_MEDIA
 
 
@@ -62,6 +64,27 @@ def rename(parent_id: str, parent_name:str, old_name: str, new_name: str) -> Non
     return
 
 
+def get_quoted_name(id: str, type: str, name: str) -> str:
+    l_i = Item(id, type, name, 1)
+    return l_i.get_quoted_name()
+
+
+def view_others(id: str, type: str, name: str) -> dict:
+    l_o = Item(id, type, name, 1)
+    l_o.fill_ancestors()
+    return {'document': l_o}
+
+
+def get_file_binary_object(id: str, name: str) -> IO[bytes]:
+    l_f = File(id, '', name, 1)
+    return l_f.get_file_binary_object()
+
+
+def guess_file_mimetype(id: str, name: str) -> type:
+    l_f = File(id, '', name, 1)
+    return l_f.guess_file_mimetype()
+
+
 def view_text(id: str, name: str) -> dict:
     l_t = Text(id, name, 1)
     l_t.prepare_view()
@@ -80,24 +103,6 @@ def view_image(id: str, name: str) -> dict:
     return {'document': l_i}
 
 
-def view_pdf(id: str, name: str) -> dict:
-    l_p = Pdf(id, name, 1)
-    l_p.prepare_view()
-    return {'document': l_p}
-
-
-def view_media(id: str, name: str) -> dict:
-    l_m = Media(id, name, 1)
-    l_m.prepare_view()
-    return {'document': l_m}
-
-
-def view_others(id: str, type: str, name: str) -> dict:
-    l_o = Item(id, type, name, 1)
-    l_o.fill_ancestors()
-    return {'document': l_o}
-
-
 def get_web_encoded_image(id: str) -> str:
     l_i = Image(id, '', 1)
     return l_i.get_web_encoded_image()
@@ -108,9 +113,16 @@ def get_image_bytearray(id: str) -> bytes:
     return l_i.get_image_bytearray()
 
 
-def get_quoted_name(id: str, type: str, name: str) -> str:
-    l_i = Item(id, type, name, 1)
-    return l_i.get_quoted_name()
+def view_pdf(id: str, name: str) -> dict:
+    l_p = Pdf(id, name, 1)
+    l_p.prepare_view()
+    return {'document': l_p}
+
+
+def view_media(id: str, name: str) -> dict:
+    l_m = Media(id, name, 1)
+    l_m.prepare_view()
+    return {'document': l_m}
 
 
 class FilesystemHandler:
@@ -186,8 +198,12 @@ class FilesystemDocumentHandler(FilesystemHandler):
 class FilesystemDownloadHandler(FilesystemHandler):
 
     def run(self) -> FileResponse:
-        res = FileResponse(get_image_bytearray(self.get_param('id')))
-        res['Content-Disposition'] = f"attachment; filename*=UTF-8''{get_quoted_name(self.get_param('id'), self.get_param('type'), self.get_param('name'))}"
+        f = get_file_binary_object(self.get_param('id'), self.get_param('name'))
+        t = guess_file_mimetype(self.get_param('id'), self.get_param('name'))
+        if t is None:
+            t = 'application/octet-stream'
+        res = FileResponse(f, t)
+        res['Content-Disposition'] = f"attachment; filename={self.get_param('name')}; filename*=UTF-8''{get_quoted_name(self.get_param('id'), self.get_param('type'), self.get_param('name'))}"
         return res
 
 

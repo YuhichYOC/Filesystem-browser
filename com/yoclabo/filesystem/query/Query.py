@@ -18,11 +18,13 @@
 #
 
 import base64
+import mimetypes
 import os
 import os.path
 import shutil
 import stat
 from pathlib import Path
+from typing import IO
 
 from django.utils.text import get_valid_filename
 
@@ -115,6 +117,15 @@ def create_file(path: str, name: str, content: any) -> None:
     return
 
 
+def get_file_binary_object(path: str) -> IO[bytes]:
+    return open(path, 'rb')
+
+
+def guess_file_mimetype(path: str) -> type:
+    t, _ = mimetypes.guess_type(path)
+    return t
+
+
 def get_text_content(path: str) -> str:
     return open(path).read()
 
@@ -139,11 +150,11 @@ def rename(path: str, old_name: str, new_name: str) -> None:
 
 
 def get_web_encoded_image(path: str) -> str:
-    return 'data:image/jpeg;base64,' + base64.b64encode(open(str(path), 'rb').read()).decode()
+    return 'data:image/jpeg;base64,' + base64.b64encode(get_file_binary_object(path).read()).decode()
 
 
 def get_image_bytearray(path: str) -> bytes:
-    return open(str(path), 'rb').read()
+    return get_file_binary_object(path).read()
 
 
 def copy_file_to_static(copy_from: str, copy_to: str) -> None:

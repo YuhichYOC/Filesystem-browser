@@ -21,9 +21,11 @@ import urllib.parse
 
 import environ
 
+from typing import IO
+
 from com.yoclabo.filesystem.query.Query import (
     ITEM_TYPE_DIRECTORY, ITEM_TYPE_TEXT, ITEM_TYPE_IMAGE, ITEM_TYPE_PDF, ITEM_TYPE_MEDIA,
-    get_path_from_root_directory, query_ancestors, query_children, create_directory, create_file,
+    get_path_from_root_directory, query_ancestors, query_children, create_directory, create_file, get_file_binary_object, guess_file_mimetype,
     get_text_content, update_text_content, rename, get_web_encoded_image, get_image_bytearray, copy_file_to_static
 )
 from com.yoclabo.setting import Server
@@ -185,7 +187,24 @@ class Directory(Item):
         return
 
 
-class Text(Item):
+class File(Item):
+
+    def __init__(self, id: str, type: str, name: str, sequence: int) -> None:
+        super().__init__(id, type, name, sequence)
+        return
+
+    def get_file_binary_object(self) -> IO[bytes]:
+        return get_file_binary_object(self.f_id)
+
+    def guess_file_mimetype(self) -> type:
+        return guess_file_mimetype(self.f_id)
+
+    def prepare_view(self) -> None:
+        self.fill_ancestors()
+        return
+
+
+class Text(File):
 
     def __init__(self, id: str, name: str, sequence: int) -> None:
         super().__init__(id, ITEM_TYPE_TEXT, name, sequence)
@@ -205,12 +224,12 @@ class Text(Item):
         return
 
     def prepare_view(self) -> None:
-        self.fill_ancestors()
+        super().prepare_view()
         self.get_text_content()
         return
 
 
-class Image(Item):
+class Image(File):
 
     def __init__(self, id: str, name: str, sequence: int) -> None:
         super().__init__(id, ITEM_TYPE_IMAGE, name, sequence)
@@ -228,31 +247,31 @@ class Image(Item):
         return get_image_bytearray(self.f_id)
 
     def prepare_view(self) -> None:
-        self.fill_ancestors()
+        super().prepare_view()
         self.f_image = self.get_web_encoded_image()
         return
 
 
-class Pdf(Item):
+class Pdf(File):
 
     def __init__(self, id: str, name: str, sequence: int) -> None:
         super().__init__(id, ITEM_TYPE_PDF, name, sequence)
         return
 
     def prepare_view(self) -> None:
-        self.fill_ancestors()
+        super().prepare_view()
         copy_file_to_static(self.f_id, self.f_name)
         return
 
 
-class Media(Item):
+class Media(File):
 
     def __init__(self, id: str, name: str, sequence: int) -> None:
         super().__init__(id, ITEM_TYPE_MEDIA, name, sequence)
         return
 
     def prepare_view(self) -> None:
-        self.fill_ancestors()
+        super().prepare_view()
         copy_file_to_static(self.f_id, self.f_name)
         return
 
